@@ -32,7 +32,13 @@ async function run() {
 
     // Api Fetching starts here
     // User Api
-    app.get("/tuitions", async (req, res) => {});
+    app.get("/tuitions", async (req, res) => {
+      const query = {};
+
+      const cursor = tuitionsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     app.post("/tuitions", async (req, res) => {
       const tuition = req.body;
