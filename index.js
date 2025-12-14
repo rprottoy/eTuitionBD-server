@@ -29,7 +29,8 @@ async function run() {
 
     const db = client.db("eTuitionBD_db");
     const tuitionsCollection = db.collection("tuitions");
-    const tutorDetailsCollection = db.collection("tutorDetails");
+    const tutorDetailsCollection = db.collection("users");
+    const userCollection = db.collection("tutorDetails");
 
     // Api Fetching starts here
     // User Api
@@ -43,7 +44,8 @@ async function run() {
 
     // To get Tuitions for homepage 4
     app.get("/tuition-homepage", async (req, res) => {
-      const cursor = tutorDetailsCollection.find().limit(4);
+      const query = {};
+      const cursor = tuitionsCollection.find(query).limit(4);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -54,9 +56,26 @@ async function run() {
       res.send(result);
     });
 
+    // users APIs
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      user.role = "student";
+      user.createdAt = new Date();
+
+      const email = user.email;
+      const userExists = await userCollection.findOne({ email });
+
+      if (userExists) {
+        return res.send({ message: "user Exists" });
+      }
+
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
     app.post("/tutor-details", async (req, res) => {
-      const tuition = req.body;
-      const result = await tuitionsCollection.insertOne(tuition);
+      const tutor = req.body;
+      const result = await tutorDetailsCollection.insertOne(tutor);
       res.send(result);
     });
 
