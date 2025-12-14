@@ -29,6 +29,7 @@ async function run() {
 
     const db = client.db("eTuitionBD_db");
     const tuitionsCollection = db.collection("tuitions");
+    const tutorDetailsCollection = db.collection("tutorDetails");
 
     // Api Fetching starts here
     // User Api
@@ -40,7 +41,20 @@ async function run() {
       res.send(result);
     });
 
+    // To get Tuitions for homepage 4
+    app.get("/tuition-homepage", async (req, res) => {
+      const cursor = tutorDetailsCollection.find().limit(4);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post("/tuitions", async (req, res) => {
+      const tuition = req.body;
+      const result = await tuitionsCollection.insertOne(tuition);
+      res.send(result);
+    });
+
+    app.post("/tutor-details", async (req, res) => {
       const tuition = req.body;
       const result = await tuitionsCollection.insertOne(tuition);
       res.send(result);
