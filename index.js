@@ -74,6 +74,14 @@ async function run() {
       res.send(result);
     });
 
+    // To get Tutor for homepage 4
+    app.get("/tutor-homepage", async (req, res) => {
+      const query = {};
+      const cursor = tuitionsCollection.find(query).limit(4);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // To get a specific tuition
     app.get("/tuition-details/:id", async (req, res) => {
       const id = req.params.id;
