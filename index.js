@@ -6,9 +6,33 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const port = process.env.PORT || 3000;
 
+const admin = require("firebase-admin");
+const serviceAccount = require("./etuitionbd-firebase-adminsdk-fbsvc.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 // middleware
 app.use(express.json());
 app.use(cors());
+
+const verifyFBToken = async (req, res, next) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+
+  try {
+    const idToken = token.split(" ")[1];
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    req.decoded_email = decoded.email;
+    next();
+  } catch (err) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+};
 
 // Mongodb Connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.plgjzw8.mongodb.net/?appName=Cluster0`;
@@ -29,8 +53,8 @@ async function run() {
 
     const db = client.db("eTuitionBD_db");
     const tuitionsCollection = db.collection("tuitions");
-    const tutorDetailsCollection = db.collection("users");
-    const userCollection = db.collection("tutorDetails");
+    const tutorDetailsCollection = db.collection("tutorDetails");
+    const userCollection = db.collection("users");
 
     // Api Fetching starts here
     // User Api
@@ -55,6 +79,15 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tuitionsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // To get student's Listings
+    app.get("/my-listings", async (req, res) => {
+      const email = req.query.email;
+      const result = await tuitionsCollection
+        .find({ providerEmail: email })
+        .toArray();
       res.send(result);
     });
 
@@ -105,6 +138,14 @@ async function run() {
       };
       const options = {};
       const result = await tuitionsCollection.updateOne(query, update, options);
+      res.send(result);
+    });
+
+    // to delete tuition detail
+    app.delete("/tuition/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await tuitionsCollection.deleteOne(query);
       res.send(result);
     });
 
