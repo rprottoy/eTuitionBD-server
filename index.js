@@ -50,6 +50,14 @@ async function run() {
       res.send(result);
     });
 
+    // To get a specific tuition
+    app.get("/tuition-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await tuitionsCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/tuitions", async (req, res) => {
       const tuition = req.body;
       const result = await tuitionsCollection.insertOne(tuition);
@@ -76,6 +84,27 @@ async function run() {
     app.post("/tutor-details", async (req, res) => {
       const tutor = req.body;
       const result = await tutorDetailsCollection.insertOne(tutor);
+      res.send(result);
+    });
+
+    // To update any existing car
+    app.patch("/update-tuition/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedTuition = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          class: updatedTuition.class,
+          days: updatedTuition.days,
+          subject: updatedTuition.subject,
+          time: updatedTuition.time,
+          location: updatedTuition.location,
+          salary: updatedTuition.salary,
+        },
+      };
+      const options = {};
+      const result = await tuitionsCollection.updateOne(query, update, options);
       res.send(result);
     });
 
