@@ -66,6 +66,15 @@ async function run() {
       res.send(result);
     });
 
+    // Api for all users
+    app.get("/tutors", async (req, res) => {
+      const query = {};
+
+      const cursor = tutorDetailsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // To get Tuitions for homepage 4
     app.get("/tuition-homepage", async (req, res) => {
       const query = {};
@@ -77,7 +86,7 @@ async function run() {
     // To get Tutor for homepage 4
     app.get("/tutor-homepage", async (req, res) => {
       const query = {};
-      const cursor = tuitionsCollection.find(query).limit(4);
+      const cursor = tutorDetailsCollection.find(query).limit(4);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -108,7 +117,7 @@ async function run() {
     // users APIs
     app.post("/users", async (req, res) => {
       const user = req.body;
-      user.role = "student";
+      user.role = user.role || "student";
       user.createdAt = new Date();
 
       const email = user.email;
@@ -119,7 +128,7 @@ async function run() {
       }
 
       const result = await userCollection.insertOne(user);
-      res.send(result);
+      res.send({ ...result, data: { ...result.data, ...user } });
     });
 
     app.post("/tutor-details", async (req, res) => {
