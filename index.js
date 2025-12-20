@@ -7,11 +7,11 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const port = process.env.PORT || 3000;
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./etuitionbd-firebase-adminsdk-fbsvc.json");
+// const serviceAccount = require("./etuitionbd-firebase-adminsdk-fbsvc.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
 // middleware
 app.use(express.json());
