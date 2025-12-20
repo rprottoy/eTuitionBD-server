@@ -137,6 +137,8 @@ async function run() {
       res.send(result);
     });
 
+    console.log(result);
+
     // To update any existing car
     app.patch("/update-tuition/:id", async (req, res) => {
       const id = req.params.id;
