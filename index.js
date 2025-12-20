@@ -100,11 +100,9 @@ async function run() {
     });
 
     // To get student's Listings
-    app.get("/my-listings", async (req, res) => {
+    app.get("/my-tuitions", async (req, res) => {
       const email = req.query.email;
-      const result = await tuitionsCollection
-        .find({ providerEmail: email })
-        .toArray();
+      const result = await tuitionsCollection.find({ email: email }).toArray();
       res.send(result);
     });
 
