@@ -110,6 +110,7 @@ async function run() {
 
     app.post("/tuitions", async (req, res) => {
       const tuition = req.body;
+      PerformanceObserverEntryList.createdAt = new Date();
       const result = await tuitionsCollection.insertOne(tuition);
       res.send(result);
     });
