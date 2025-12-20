@@ -17,22 +17,22 @@ admin.initializeApp({
 app.use(express.json());
 app.use(cors());
 
-const verifyFBToken = async (req, res, next) => {
-  const token = req.headers.authorization;
+// const verifyFBToken = async (req, res, next) => {
+//   const token = req.headers.authorization;
 
-  if (!token) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
+//   if (!token) {
+//     return res.status(401).send({ message: "unauthorized access" });
+//   }
 
-  try {
-    const idToken = token.split(" ")[1];
-    const decoded = await admin.auth().verifyIdToken(idToken);
-    req.decoded_email = decoded.email;
-    next();
-  } catch (err) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-};
+//   try {
+//     const idToken = token.split(" ")[1];
+//     const decoded = await admin.auth().verifyIdToken(idToken);
+//     req.decoded_email = decoded.email;
+//     next();
+//   } catch (err) {
+//     return res.status(401).send({ message: "unauthorized access" });
+//   }
+// };
 
 // Mongodb Connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.plgjzw8.mongodb.net/?appName=Cluster0`;
