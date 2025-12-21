@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const port = process.env.PORT || 3000;
 
@@ -128,6 +128,28 @@ async function run() {
 
       const result = await userCollection.insertOne(user);
       res.send({ ...result, data: { ...result.data, ...user } });
+    });
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // To store data for Applies
+    app.post("/myApplies", async (req, res) => {
+      const data = req.body;
+      const applyId = data._id;
+      // console.log(data, id);
+
+      const result = await bookingCollection.insertOne(data);
+
+      const query = { _id: new ObjectId(applyId) };
+      const updateStatus = {
+        $set: { availabilityStatus: "Booked" },
+      };
+      const updateResult = await carsCollection.updateOne(query, updateStatus);
+      res.send(result);
     });
 
     app.post("/tutor-details", async (req, res) => {
