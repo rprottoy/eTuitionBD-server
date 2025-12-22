@@ -6,33 +6,18 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const port = process.env.PORT || 3000;
 
-// const admin = require("firebase-admin");
-// const serviceAccount = require("./etuitionbd-firebase-adminsdk-fbsvc.json");
+const admin = require("firebase-admin");
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
+const serviceAccount = require("./etuitionbd-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // middleware
 app.use(express.json());
 app.use(cors());
-
-const verifyFBToken = async (req, res, next) => {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-
-  try {
-    const idToken = token.split(" ")[1];
-    const decoded = await admin.auth().verifyIdToken(idToken);
-    req.decoded_email = decoded.email;
-    next();
-  } catch (err) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-};
+// middleware with database access
 
 // Mongodb Connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.plgjzw8.mongodb.net/?appName=Cluster0`;
@@ -56,6 +41,37 @@ async function run() {
     const tutorDetailsCollection = db.collection("tutorDetails");
     const userCollection = db.collection("users");
     const bookingCollection = db.collection("bookings");
+
+    const verifyFBToken = async (req, res, next) => {
+      const token = req.headers.authorization;
+
+      if (!token) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+
+      try {
+        const idToken = token.split(" ")[1];
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        req.decoded_email = decoded.email;
+        next();
+      } catch (err) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+    };
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded_email;
+      // console.log(req.headers);
+      const query = { email };
+      const user = await userCollection.findOne(query);
+
+      console.log(user);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
 
     // Api Fetching starts here
     // User Api
@@ -97,6 +113,15 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tuitionsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // to get applications
+    app.get("/applications/:id", async (req, res) => {
+      const tuitionID = req.params.id;
+      const query = { tuitionID };
+      const result = await bookingCollection.find(query).toArray();
+      console.log(result);
       res.send(result);
     });
 
@@ -142,9 +167,11 @@ async function run() {
     });
 
     // to make Admin to anyone
-    app.patch("/users/:id", async (req, res) => {
+    app.patch("/users/:id/role", verifyAdmin, async (req, res) => {
       const id = req.params.id;
+
       const roleInfo = req.body;
+      console.log(roleInfo, id);
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
@@ -152,6 +179,7 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(query, updatedDoc);
+      console.log(result);
       res.send(result);
     });
 
