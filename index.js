@@ -55,6 +55,7 @@ async function run() {
     const tuitionsCollection = db.collection("tuitions");
     const tutorDetailsCollection = db.collection("tutorDetails");
     const userCollection = db.collection("users");
+    const bookingCollection = db.collection("bookings");
 
     // Api Fetching starts here
     // User Api
@@ -116,6 +117,7 @@ async function run() {
     // users APIs
     app.post("/users", async (req, res) => {
       const user = req.body;
+      console.log(user);
       user.role = user.role || "student";
       user.createdAt = new Date();
 
@@ -130,6 +132,29 @@ async function run() {
       res.send({ ...result, data: { ...result.data, ...user } });
     });
 
+    app.get("/users/:id", async (req, res) => {});
+
+    app.get("/users/:email/role", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ role: user?.role || "user" });
+    });
+
+    // to make Admin to anyone
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const roleInfo = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: roleInfo.role,
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
     app.get("/users", async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
@@ -139,16 +164,16 @@ async function run() {
     // To store data for Applies
     app.post("/myApplies", async (req, res) => {
       const data = req.body;
-      const applyId = data._id;
+      // const applyId = data._id;
       // console.log(data, id);
 
       const result = await bookingCollection.insertOne(data);
 
-      const query = { _id: new ObjectId(applyId) };
-      const updateStatus = {
-        $set: { availabilityStatus: "Booked" },
-      };
-      const updateResult = await carsCollection.updateOne(query, updateStatus);
+      // const query = { _id: new ObjectId(applyId) };
+      // const updateStatus = {
+      //   $set: { availabilityStatus: "Booked" },
+      // };
+      // const updateResult = await bookingCollection.updateOne(query, updateStatus);
       res.send(result);
     });
 
@@ -156,9 +181,8 @@ async function run() {
       const tutor = req.body;
       const result = await tutorDetailsCollection.insertOne(tutor);
       res.send(result);
+      console.log(result);
     });
-
-    console.log(result);
 
     // To update any existing car
     app.patch("/update-tuition/:id", async (req, res) => {
