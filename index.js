@@ -106,7 +106,7 @@ async function run() {
     // Api Fetching starts here
     // User Api
     app.get("/tuitions", async (req, res) => {
-      const query = {};
+      const query = { status: "Approved" };
 
       const cursor = tuitionsCollection.find(query);
       const result = await cursor.toArray();
@@ -331,6 +331,32 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await tuitionsCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // Delete user
+    app.delete("/users/:id", verifyFBToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        // Optional: Check if user is trying to delete themselves
+        const userToDelete = await userCollection.findOne(query);
+        if (userToDelete.email === req.decoded_email) {
+          return res
+            .status(400)
+            .send({ message: "You cannot delete yourself" });
+        }
+
+        const result = await userCollection.deleteOne(query);
+
+        if (result.deletedCount === 0) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Error deleting user", error });
+      }
     });
 
     // payment related apis
