@@ -81,7 +81,7 @@ async function run() {
       try {
         const idToken = token.split(" ")[1];
         const decoded = await admin.auth().verifyIdToken(idToken);
-        console.log("after token validation", decoded);
+        // console.log("after token validation", decoded);
         req.decoded_email = decoded.email;
         next();
       } catch (err) {
@@ -249,7 +249,7 @@ async function run() {
     // users APIs
     app.post("/users", async (req, res) => {
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       user.role = user.role || "student";
       user.createdAt = new Date();
 
@@ -269,7 +269,7 @@ async function run() {
       tutor.status = "pending";
       const result = await tutorDetailsCollection.insertOne(tutor);
       res.send(result);
-      console.log(result);
+      // console.log(result);
     });
 
     // To update any existing tuition
@@ -363,7 +363,7 @@ async function run() {
     app.post("/create-checkout-session", async (req, res) => {
       const paymentInfo = req.body;
       const amount = parseInt(paymentInfo.cost) * 100;
-      console.log("Payment Info:", paymentInfo);
+      // console.log("Payment Info:", paymentInfo);
       const session = await stripe.checkout.sessions.create({
         line_items: [
           {
@@ -390,7 +390,7 @@ async function run() {
 
       // Post and delete to remove and accepting application
 
-      console.log(session);
+      // console.log(session);
       res.send({ url: session.url });
     });
 
