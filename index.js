@@ -112,26 +112,49 @@ async function run() {
     // User Api
     app.get("/tuitions", async (req, res) => {
       const query = { status: "Approved" };
-      const { limit = 0, skip = 0 } = req.query;
+      const {
+        limit = 0,
+        skip = 0,
+        sort = "class",
+        order = "desc",
+        search = "",
+      } = req.query;
+
+      const sortOption = {};
+
+      if (search) {
+        query.subject = { $regex: search, $options: "i" };
+      }
+
+      // console.log(query);
+
+      sortOption[sort || "class"] = order === "asc" ? 1 : -1;
 
       const cursor = tuitionsCollection
         .find(query)
+        .sort(sortOption)
         .project({ email: 0, duration: 0, studentCount: 0, status: 0 })
         .limit(Number(limit))
         .skip(Number(skip));
 
-      const count = await tuitionsCollection.countDocuments();
+      const count = await tuitionsCollection.countDocuments(query);
       const result = await cursor.toArray();
       res.send({ result, total: count });
     });
 
     // Api for all users
     app.get("/tutors", async (req, res) => {
+      const { limit = 0, skip = 0 } = req.query;
       const query = {};
 
-      const cursor = tutorDetailsCollection.find(query);
+      const cursor = tutorDetailsCollection
+        .find(query)
+        .limit(Number(limit))
+        .skip(Number(skip));
+
+      const count = await tutorDetailsCollection.countDocuments();
       const result = await cursor.toArray();
-      res.send(result);
+      res.send({ result, total: count });
     });
 
     // To get Tuitions for homepage 4
